@@ -13,7 +13,7 @@ struct CollisionCategories {
     static let Snake: UInt32 = 1
     static let SnakeHead: UInt32 = 1 << 1
     static let Apple: UInt32 = 1 << 2
-    static let EdgeBody: UInt32 = 1 << 3    
+    static let EdgeBody: UInt32 = 1 << 3
 }
 
 class GameScene: SKScene {
@@ -89,14 +89,31 @@ class GameScene: SKScene {
         for touch in touches {
             let touchLocation = touch.location(in: self)
             
-            guard let touchedNode = atPoint(touchLocation) as? SKShapeNode else { continue }
+            if let touchedNode = atPoint(touchLocation) as? SKShapeNode {
             
-            if touchedNode.name == clockWiseButtonName {
-                touchedNode.fillColor = .gray
+                if touchedNode.name == clockWiseButtonName {
+                    touchedNode.fillColor = .gray
+                }
+                else if touchedNode.name == counterClockWiseButtonName {
+                    touchedNode.fillColor = .gray
+                }
+                
+            } else if let touchedNode = atPoint(touchLocation) as? SKLabelNode {
+               
+                if touchedNode.name == "restart" {
+                    touchedNode.removeFromParent()
+                    let counterClockwisePosition = CGPoint(x: frame.minX + 30, y: frame.minY + 30)
+                    let clockwisePosition = CGPoint(x: frame.maxX - 80, y: frame.minY + 30)
+                               
+                    addRotationButton(name: counterClockWiseButtonName, position: counterClockwisePosition)
+                    addRotationButton(name: clockWiseButtonName, position: clockwisePosition)
+                               
+                    snake = Snake(position: CGPoint(x: frame.midX, y: frame.midY))
+                    addChild(snake)
+                    createApple()
+                }
             }
-            else if touchedNode.name == counterClockWiseButtonName {
-                touchedNode.fillColor = .gray
-            }
+            
         }
         
         // * SKLabelNode - для отображения текста
@@ -121,6 +138,17 @@ extension GameScene: SKPhysicsContactDelegate {
             snake.addBodyPart()
             apple?.removeFromParent()
             createApple()
+        case CollisionCategories.EdgeBody:
+            scene?.removeAllChildren()
+            
+            let text = SKLabelNode()
+            text.color = .white
+            text.text = "Restart Game?"
+            text.position = CGPoint(x: frame.midX, y: frame.midY)
+            text.name = "restart"
+            addChild(text)
+            
+
         default:
             break
         }
